@@ -1,6 +1,6 @@
-# xmandate-sar-formatter
+# sar-sdk
 
-[![CI](https://github.com/xmandate-ai/xmandate-sar-formatter/actions/workflows/ci.yml/badge.svg)](https://github.com/xmandate-ai/xmandate-sar-formatter/actions/workflows/ci.yml)
+[![CI](https://github.com/xmandate-ai/sar-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/xmandate-ai/sar-sdk/actions/workflows/ci.yml)
 
 TypeScript SDK for creating and verifying **Settlement Attestation Receipts (SAR v0.1)**.
 
@@ -22,7 +22,7 @@ SAR receipts provide this proof. This SDK lets you produce and consume them.
 ## Install
 
 ```bash
-npm install xmandate-sar-formatter
+npm install sar-sdk
 ```
 
 ## Quick start
@@ -33,7 +33,7 @@ npm install xmandate-sar-formatter
 import {
   verifyReceipt,
   resolveKidFromWellKnown,
-} from 'xmandate-sar-formatter';
+} from 'sar-sdk';
 
 // The receipt you received (e.g. from a verifier service or another agent)
 const receipt = {
@@ -60,8 +60,8 @@ await verifyReceipt(receipt, (kid) =>
 ### Sign a receipt
 
 ```typescript
-import { signReceipt, hashTaskId } from 'xmandate-sar-formatter';
-import type { SarCore } from 'xmandate-sar-formatter';
+import { signReceipt, hashTaskId } from 'sar-sdk';
+import type { SarCore } from 'sar-sdk';
 
 const core: SarCore = {
   task_id_hash: hashTaskId('order-12345'),    // "sha256:<hex>"
@@ -83,7 +83,7 @@ const receipt = await signReceipt(core, {
 If you already have the verifier's public key, skip the network call:
 
 ```typescript
-import { verifyReceipt, base64urlDecode } from 'xmandate-sar-formatter';
+import { verifyReceipt, base64urlDecode } from 'sar-sdk';
 
 const knownKeys: Record<string, Uint8Array> = {
   'xmandate-ed25519-01': base64urlDecode('RXM_zNUwGswdgebuLJltVibXrrHfOggnTObWXDurocI'),
@@ -196,7 +196,7 @@ type KeyResolver = (kid: string) => Promise<Uint8Array> | Uint8Array;
 All errors extend `Error` and can be caught by class:
 
 ```typescript
-import { InvalidSignature, ReceiptIdMismatch } from 'xmandate-sar-formatter';
+import { InvalidSignature, ReceiptIdMismatch } from 'sar-sdk';
 
 try {
   await verifyReceipt(receipt, resolveKey);
@@ -221,7 +221,7 @@ Works out of the box on Cloudflare Workers, Deno, Vercel Edge Functions, and any
 
 ```typescript
 // Cloudflare Worker example
-import { verifyReceipt, resolveKidFromWellKnown } from 'xmandate-sar-formatter';
+import { verifyReceipt, resolveKidFromWellKnown } from 'sar-sdk';
 
 export default {
   async fetch(request: Request): Promise<Response> {
@@ -242,7 +242,7 @@ export default {
 
 ```bash
 npm install
-npm test              # run all 31 tests
+npm test              # run all 34 tests
 npm run build         # compile TypeScript to dist/
 ```
 

@@ -1,7 +1,7 @@
 {
-  "name": "xmandate-sar-formatter",
+  "name": "sar-sdk",
   "version": "0.1.0",
-  "description": "TypeScript SDK for SAR v0.1 (Settlement Attestation Receipt) — portable execution proof for agent commerce",
+  "description": "TypeScript SDK for SAR v0.1 (Settlement Attestation Receipt) — sign, verify, and resolve portable execution proofs for agent commerce",
   "type": "module",
   "exports": {
     ".": {
@@ -29,9 +29,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xmandate-ai/xmandate-sar-formatter.git"
+    "url": "git+https://github.com/xmandate-ai/sar-sdk.git"
   },
-  "homepage": "https://github.com/xmandate-ai/xmandate-sar-formatter",
+  "homepage": "https://github.com/xmandate-ai/sar-sdk",
+  "keywords": ["sar", "settlement-attestation-receipt", "ed25519", "agent-commerce", "attestation", "receipt", "verification"],
   "license": "MIT",
   "engines": {
     "node": ">=20"
