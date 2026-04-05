@@ -1,0 +1,22 @@
+{
+  "description": "SAR v0.2 INDETERMINATE fixture — evaluator timeout (honest failure to complete)",
+  "sar_version": "0.2",
+  "input": {
+    "task_id_hash": "sha256:fixture-task-evaluator-timeout",
+    "verdict": "INDETERMINATE",
+    "confidence": 0.5,
+    "reason_code": "EVALUATOR_TIMEOUT",
+    "ts": "2026-02-14T12:00:00Z",
+    "verifier_kid": "xmandate-ed25519-test-01"
+  },
+  "canonical_json": "{\"confidence\":0.5,\"reason_code\":\"EVALUATOR_TIMEOUT\",\"task_id_hash\":\"sha256:fixture-task-evaluator-timeout\",\"ts\":\"2026-02-14T12:00:00Z\",\"verdict\":\"INDETERMINATE\",\"verifier_kid\":\"xmandate-ed25519-test-01\"}",
+  "receipt_id": "sha256:abedf4f18e54e46e69c93323525b4c347fc81744a78d695ea686326d84432f59",
+  "public_key_kid": "xmandate-ed25519-test-01",
+  "sig": "base64url:Rj0MnAZqyuzE38jysMITbLK0IQTNbl_tWDGNQFm8z0YBh4nW7-k7qmUD29F7oJ95AQOa-Y-MQBQzbYC57CpDDw",
+  "verification_steps": [
+    "1. JCS-canonicalize `input` (RFC 8785).",
+    "2. Confirm it matches `canonical_json` byte-for-byte.",
+    "3. SHA256(canonical_json bytes) => receipt_id hex.",
+    "4. Verify Ed25519 signature over the hash bytes using xmandate-ed25519-test-01 public key from sar-keys.json."
+  ]
+}

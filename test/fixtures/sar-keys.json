@@ -6,6 +6,13 @@
       "crv": "Ed25519",
       "x": "IMAnrGSJG4MVToPgmCSQXVxIBr6VRUnmIHgtP7GZK1E",
       "created": "2026-02-14T00:00:00Z"
+    },
+    {
+      "kid": "xmandate-ed25519-test-02",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "0ymt3nOluAOr2FgV_XJARxA6jJq_ZRcmygAYCEmw1nc",
+      "created": "2026-03-14T00:00:00Z"
     }
   ]
 }

@@ -1,0 +1,22 @@
+{
+  "description": "SAR v0.2 INDETERMINATE fixture — conflicting evaluator passes",
+  "sar_version": "0.2",
+  "input": {
+    "task_id_hash": "sha256:fixture-task-conflict",
+    "verdict": "INDETERMINATE",
+    "confidence": 0.35,
+    "reason_code": "CONFLICT",
+    "ts": "2026-02-14T12:00:00Z",
+    "verifier_kid": "xmandate-ed25519-test-01"
+  },
+  "canonical_json": "{\"confidence\":0.35,\"reason_code\":\"CONFLICT\",\"task_id_hash\":\"sha256:fixture-task-conflict\",\"ts\":\"2026-02-14T12:00:00Z\",\"verdict\":\"INDETERMINATE\",\"verifier_kid\":\"xmandate-ed25519-test-01\"}",
+  "receipt_id": "sha256:41106a9ba78941efd624d4c93ba800471fd3799e9e5a00419b2c9ae12bf4e8ec",
+  "public_key_kid": "xmandate-ed25519-test-01",
+  "sig": "base64url:O8XArYH_e6QrYiPSzrNTZpYwtuBuutG0jLXkTGaYvq4IHeRtEJOfs0o20VhUaV_hVk7qYAMfiWtBhC2U6NCMAA",
+  "verification_steps": [
+    "1. JCS-canonicalize `input` (RFC 8785).",
+    "2. Confirm it matches `canonical_json` byte-for-byte.",
+    "3. SHA256(canonical_json bytes) => receipt_id hex.",
+    "4. Verify Ed25519 signature over the hash bytes using xmandate-ed25519-test-01 public key from sar-keys.json."
+  ]
+}

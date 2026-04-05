@@ -30,6 +30,10 @@ const passFixture = loadFixture('sar-v0.1-pass.json');
 const failFixture = loadFixture('sar-v0.1-fail.json');
 const indeterminateFixture = loadFixture('sar-v0.1-indeterminate.json');
 const specialCharsFixture = loadFixture('sar-v0.1-special-chars.json');
+const indeterminateTimeoutFixture = loadFixture('sar-v0.2-indeterminate-evaluator-timeout.json');
+const indeterminateConflictFixture = loadFixture('sar-v0.2-indeterminate-conflict.json');
+const passRotatedKeyFixture = loadFixture('sar-v0.2-pass-rotated-key.json');
+const indeterminateRotatedKeyFixture = loadFixture('sar-v0.2-indeterminate-rotated-key.json');
 const keysDoc = loadFixture('sar-keys.json') as unknown as SarKeysDocument;
 
 // Helper: build a SarReceipt from a fixture
@@ -54,6 +58,10 @@ const FIXTURES = [
   { name: 'FAIL', fixture: failFixture },
   { name: 'INDETERMINATE', fixture: indeterminateFixture },
   { name: 'SPECIAL_CHARS', fixture: specialCharsFixture },
+  { name: 'INDETERMINATE_EVALUATOR_TIMEOUT', fixture: indeterminateTimeoutFixture },
+  { name: 'INDETERMINATE_CONFLICT', fixture: indeterminateConflictFixture },
+  { name: 'PASS_ROTATED_KEY', fixture: passRotatedKeyFixture },
+  { name: 'INDETERMINATE_ROTATED_KEY', fixture: indeterminateRotatedKeyFixture },
 ] as const;
 
 describe('SAR v0.1 fixture compatibility', () => {
@@ -330,8 +338,9 @@ describe('input validation', () => {
 describe('SAR keys parsing', () => {
   it('parseSarKeysDocument accepts valid document', () => {
     const doc = parseSarKeysDocument(keysDoc);
-    expect(doc.keys).toHaveLength(1);
+    expect(doc.keys).toHaveLength(2);
     expect(doc.keys[0].kid).toBe('xmandate-ed25519-test-01');
+    expect(doc.keys[1].kid).toBe('xmandate-ed25519-test-02');
   });
 
   it('parseSarKeysDocument rejects invalid document', () => {
@@ -512,5 +521,86 @@ describe('RFC 8785 §3.2.2.2 short-form escapes', () => {
     const receipt = fixtureToReceipt(specialCharsFixture);
     const result = await verifyReceipt(receipt, localKeyResolver);
     expect(result).toBe(true);
+  });
+});
+
+describe('INDETERMINATE edge cases', () => {
+  it('evaluator-timeout: partial confidence (0.5) with INDETERMINATE verdict', () => {
+    const input = indeterminateTimeoutFixture.input as SarCore;
+    expect(input.verdict).toBe('INDETERMINATE');
+    expect(input.confidence).toBe(0.5);
+    expect(input.reason_code).toBe('EVALUATOR_TIMEOUT');
+
+    const receiptId = deriveReceiptId(input);
+    expect(receiptId).toBe(indeterminateTimeoutFixture.receipt_id);
+  });
+
+  it('evaluator-timeout fixture verifies', async () => {
+    const receipt = fixtureToReceipt(indeterminateTimeoutFixture);
+    const result = await verifyReceipt(receipt, localKeyResolver);
+    expect(result).toBe(true);
+  });
+
+  it('conflict: low confidence (0.35) with INDETERMINATE verdict', () => {
+    const input = indeterminateConflictFixture.input as SarCore;
+    expect(input.verdict).toBe('INDETERMINATE');
+    expect(input.confidence).toBe(0.35);
+    expect(input.reason_code).toBe('CONFLICT');
+
+    const receiptId = deriveReceiptId(input);
+    expect(receiptId).toBe(indeterminateConflictFixture.receipt_id);
+  });
+
+  it('conflict fixture verifies', async () => {
+    const receipt = fixtureToReceipt(indeterminateConflictFixture);
+    const result = await verifyReceipt(receipt, localKeyResolver);
+    expect(result).toBe(true);
+  });
+});
+
+describe('key rotation', () => {
+  it('sar-keys.json contains both kid-01 and kid-02', () => {
+    const kid01Key = resolveKidFromDocument(keysDoc, 'xmandate-ed25519-test-01');
+    const kid02Key = resolveKidFromDocument(keysDoc, 'xmandate-ed25519-test-02');
+    expect(kid01Key).toBeInstanceOf(Uint8Array);
+    expect(kid01Key.length).toBe(32);
+    expect(kid02Key).toBeInstanceOf(Uint8Array);
+    expect(kid02Key.length).toBe(32);
+    // Keys must be different
+    expect(Buffer.from(kid01Key).equals(Buffer.from(kid02Key))).toBe(false);
+  });
+
+  it('PASS fixture signed with kid-02 verifies via kid-indexed lookup', async () => {
+    const receipt = fixtureToReceipt(passRotatedKeyFixture);
+    expect(receipt.verifier_kid).toBe('xmandate-ed25519-test-02');
+    const result = await verifyReceipt(receipt, localKeyResolver);
+    expect(result).toBe(true);
+  });
+
+  it('INDETERMINATE fixture signed with kid-02 verifies via kid-indexed lookup', async () => {
+    const receipt = fixtureToReceipt(indeterminateRotatedKeyFixture);
+    expect(receipt.verifier_kid).toBe('xmandate-ed25519-test-02');
+    const result = await verifyReceipt(receipt, localKeyResolver);
+    expect(result).toBe(true);
+  });
+
+  it('kid-02 fixture fails verification with kid-01 key', async () => {
+    const receipt = fixtureToReceipt(passRotatedKeyFixture);
+    // Force resolution to kid-01 key regardless of kid in receipt
+    const kid01Only = (_kid: string) =>
+      resolveKidFromDocument(keysDoc, 'xmandate-ed25519-test-01');
+    await expect(
+      verifyReceipt(receipt, kid01Only),
+    ).rejects.toThrow(InvalidSignature);
+  });
+
+  it('kid-01 fixture fails verification with kid-02 key', async () => {
+    const receipt = fixtureToReceipt(passFixture);
+    // Force resolution to kid-02 key regardless of kid in receipt
+    const kid02Only = (_kid: string) =>
+      resolveKidFromDocument(keysDoc, 'xmandate-ed25519-test-02');
+    await expect(
+      verifyReceipt(receipt, kid02Only),
+    ).rejects.toThrow(InvalidSignature);
   });
 });

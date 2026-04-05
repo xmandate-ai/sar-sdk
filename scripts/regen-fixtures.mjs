@@ -24,15 +24,22 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURES_DIR = resolve(__dirname, '..', 'test', 'fixtures');
 
 const KID = 'xmandate-ed25519-test-01';
+const KID2 = 'xmandate-ed25519-test-02';
 const FIXED_CREATED = '2026-02-14T00:00:00Z';
+const KEY2_CREATED = '2026-03-14T00:00:00Z';
 
 // ---------- Deterministic key material ----------
-// TEST KEY - NOT FOR PRODUCTION USE
-// Derived from SHA-256 of a fixed seed string for reproducibility.
+// TEST KEYS - NOT FOR PRODUCTION USE
+// Derived from SHA-256 of fixed seed strings for reproducibility.
 const privKey = new Uint8Array(
   createHash('sha256').update('xmandate-sar-v0.1-test-fixtures').digest(),
 );
 const pubKey = await ed.getPublicKeyAsync(privKey);
+
+const privKey2 = new Uint8Array(
+  createHash('sha256').update('xmandate-sar-v0.1-test-fixtures-key-02').digest(),
+);
+const pubKey2 = await ed.getPublicKeyAsync(privKey2);
 
 function base64urlEncode(bytes) {
   let binStr = '';
@@ -53,6 +60,8 @@ function sha256Hex(data) {
 
 console.log(`kid: ${KID}`);
 console.log(`Public key (base64url): ${base64urlEncode(pubKey)}`);
+console.log(`kid: ${KID2}`);
+console.log(`Public key 2 (base64url): ${base64urlEncode(pubKey2)}`);
 
 // ---------- sar-keys.json ----------
 const keysDoc = {
@@ -64,6 +73,13 @@ const keysDoc = {
       x: base64urlEncode(pubKey),
       created: FIXED_CREATED,
     },
+    {
+      kid: KID2,
+      kty: 'OKP',
+      crv: 'Ed25519',
+      x: base64urlEncode(pubKey2),
+      created: KEY2_CREATED,
+    },
   ],
 };
 writeFileSync(
@@ -73,13 +89,13 @@ writeFileSync(
 console.log('Wrote sar-keys.json');
 
 // ---------- Helper: sign a core and return common fields ----------
-async function signCore(input) {
+async function signCore(input, signingKey = privKey) {
   const canonicalJson = canonicalize(input);
   const canonicalBytes = new TextEncoder().encode(canonicalJson);
   const digestHex = sha256Hex(canonicalBytes);
   const receiptId = `sha256:${digestHex}`;
   const digest = sha256(canonicalBytes);
-  const sigBytes = await ed.signAsync(digest, privKey);
+  const sigBytes = await ed.signAsync(digest, signingKey);
   const sig = `base64url:${base64urlEncode(sigBytes)}`;
   return { canonicalJson, receiptId, digest, sig, sigBytes };
 }
@@ -148,13 +164,100 @@ for (const def of positiveFixtures) {
     input: def.input,
     canonical_json: canonicalJson,
     receipt_id: receiptId,
-    public_key_kid: KID,
+    public_key_kid: def.input.verifier_kid,
     sig,
     verification_steps: def.verification_steps || [
       '1. JCS-canonicalize `input` (RFC 8785).',
       '2. Confirm it matches `canonical_json` byte-for-byte.',
       '3. SHA256(canonical_json bytes) => receipt_id hex.',
       '4. Verify Ed25519 signature over the hash bytes using public key from sar-keys.json.',
+    ],
+  };
+
+  writeFileSync(
+    resolve(FIXTURES_DIR, def.file),
+    JSON.stringify(fixture, null, 2) + '\n',
+  );
+  console.log(`Wrote ${def.file} (receipt_id: ${receiptId})`);
+}
+
+// ============================================================
+// SAR v0.2 FIXTURES (INDETERMINATE edge cases + key rotation)
+// ============================================================
+
+const v02Fixtures = [
+  // INDETERMINATE edge cases (signed with key-01)
+  {
+    file: 'sar-v0.2-indeterminate-evaluator-timeout.json',
+    description: 'SAR v0.2 INDETERMINATE fixture — evaluator timeout (honest failure to complete)',
+    signingKey: privKey,
+    input: {
+      task_id_hash: 'sha256:fixture-task-evaluator-timeout',
+      verdict: 'INDETERMINATE',
+      confidence: 0.5,
+      reason_code: 'EVALUATOR_TIMEOUT',
+      ts: '2026-02-14T12:00:00Z',
+      verifier_kid: KID,
+    },
+  },
+  {
+    file: 'sar-v0.2-indeterminate-conflict.json',
+    description: 'SAR v0.2 INDETERMINATE fixture — conflicting evaluator passes',
+    signingKey: privKey,
+    input: {
+      task_id_hash: 'sha256:fixture-task-conflict',
+      verdict: 'INDETERMINATE',
+      confidence: 0.35,
+      reason_code: 'CONFLICT',
+      ts: '2026-02-14T12:00:00Z',
+      verifier_kid: KID,
+    },
+  },
+  // Key rotation fixtures (signed with key-02)
+  {
+    file: 'sar-v0.2-pass-rotated-key.json',
+    description: 'SAR v0.2 PASS fixture signed with rotated key (kid-02)',
+    signingKey: privKey2,
+    input: {
+      task_id_hash: 'sha256:fixture-task-key-rotation',
+      verdict: 'PASS',
+      confidence: 0.92,
+      reason_code: 'SPEC_MATCH',
+      ts: '2026-03-14T12:00:00Z',
+      verifier_kid: KID2,
+    },
+  },
+  {
+    file: 'sar-v0.2-indeterminate-rotated-key.json',
+    description: 'SAR v0.2 INDETERMINATE fixture signed with rotated key (kid-02)',
+    signingKey: privKey2,
+    input: {
+      task_id_hash: 'sha256:fixture-task-key-rotation-indeterminate',
+      verdict: 'INDETERMINATE',
+      confidence: 0,
+      reason_code: 'SPEC_AMBIGUOUS',
+      ts: '2026-03-14T12:00:00Z',
+      verifier_kid: KID2,
+    },
+  },
+];
+
+for (const def of v02Fixtures) {
+  const { canonicalJson, receiptId, sig } = await signCore(def.input, def.signingKey);
+
+  const fixture = {
+    description: def.description,
+    sar_version: '0.2',
+    input: def.input,
+    canonical_json: canonicalJson,
+    receipt_id: receiptId,
+    public_key_kid: def.input.verifier_kid,
+    sig,
+    verification_steps: [
+      '1. JCS-canonicalize `input` (RFC 8785).',
+      '2. Confirm it matches `canonical_json` byte-for-byte.',
+      '3. SHA256(canonical_json bytes) => receipt_id hex.',
+      `4. Verify Ed25519 signature over the hash bytes using ${def.input.verifier_kid} public key from sar-keys.json.`,
     ],
   };
 

@@ -1,0 +1,22 @@
+{
+  "description": "SAR v0.2 PASS fixture signed with rotated key (kid-02)",
+  "sar_version": "0.2",
+  "input": {
+    "task_id_hash": "sha256:fixture-task-key-rotation",
+    "verdict": "PASS",
+    "confidence": 0.92,
+    "reason_code": "SPEC_MATCH",
+    "ts": "2026-03-14T12:00:00Z",
+    "verifier_kid": "xmandate-ed25519-test-02"
+  },
+  "canonical_json": "{\"confidence\":0.92,\"reason_code\":\"SPEC_MATCH\",\"task_id_hash\":\"sha256:fixture-task-key-rotation\",\"ts\":\"2026-03-14T12:00:00Z\",\"verdict\":\"PASS\",\"verifier_kid\":\"xmandate-ed25519-test-02\"}",
+  "receipt_id": "sha256:2529d20b36eaa2900b55b1aa70608fce4c8fb99d9eaf311db0edb3b8cb2802b2",
+  "public_key_kid": "xmandate-ed25519-test-02",
+  "sig": "base64url:-OO0e4YpNki3Yk6e5WIkunTVGyazAIax9wK3hLHUK7XAAiOWtvqUWi69WZThsAnWzBZQRdP1gCTsgHn0lTo2AA",
+  "verification_steps": [
+    "1. JCS-canonicalize `input` (RFC 8785).",
+    "2. Confirm it matches `canonical_json` byte-for-byte.",
+    "3. SHA256(canonical_json bytes) => receipt_id hex.",
+    "4. Verify Ed25519 signature over the hash bytes using xmandate-ed25519-test-02 public key from sar-keys.json."
+  ]
+}
