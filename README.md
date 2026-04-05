@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/xmandate-ai/sar-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/xmandate-ai/sar-sdk/actions/workflows/ci.yml)
 
-TypeScript SDK for creating and verifying **Settlement Attestation Receipts (SAR v0.1)**.
+TypeScript SDK for creating and verifying **Settlement Attestation Receipts (SAR v0.2)**.
 
 A SAR receipt is a signed, tamper-evident attestation that an AI agent's task output was independently verified against its specification. The receipt binds the verification verdict to a cryptographic proof chain: JCS-canonicalized core fields, a deterministic receipt ID derived from their SHA-256 hash, and an Ed25519 signature over that hash.
 
@@ -246,7 +246,7 @@ npm test              # run all 34 tests
 npm run build         # compile TypeScript to dist/
 ```
 
-Test fixtures are canonical SAR v0.1 test vectors with pre-computed signatures. To regenerate them with a fresh keypair:
+Test fixtures are canonical SAR v0.1 and v0.2 test vectors with pre-computed signatures. To regenerate them with a fresh keypair:
 
 ```bash
 node scripts/regen-fixtures.mjs
