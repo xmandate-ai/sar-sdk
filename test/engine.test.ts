@@ -29,6 +29,7 @@ function loadFixture(name: string): Record<string, unknown> {
 const passFixture = loadFixture('sar-v0.1-pass.json');
 const failFixture = loadFixture('sar-v0.1-fail.json');
 const indeterminateFixture = loadFixture('sar-v0.1-indeterminate.json');
+const specialCharsFixture = loadFixture('sar-v0.1-special-chars.json');
 const keysDoc = loadFixture('sar-keys.json') as unknown as SarKeysDocument;
 
 // Helper: build a SarReceipt from a fixture
@@ -52,6 +53,7 @@ const FIXTURES = [
   { name: 'PASS', fixture: passFixture },
   { name: 'FAIL', fixture: failFixture },
   { name: 'INDETERMINATE', fixture: indeterminateFixture },
+  { name: 'SPECIAL_CHARS', fixture: specialCharsFixture },
 ] as const;
 
 describe('SAR v0.1 fixture compatibility', () => {
@@ -474,5 +476,41 @@ describe('v0.2 counterparty support', () => {
 
     const receipt = await signReceipt(core, { privateKey: privKey });
     expect(receipt.counterparty).toBeUndefined();
+  });
+});
+
+describe('RFC 8785 §3.2.2.2 short-form escapes', () => {
+  const input = specialCharsFixture.input as SarCore;
+  const expectedCanonical = specialCharsFixture.canonical_json as string;
+
+  it('canonicalizeCore uses short-form \\b\\f\\n\\r\\t, never \\uXXXX long-form', () => {
+    const coreBytes = canonicalizeCore(input);
+    const canonical = new TextDecoder().decode(coreBytes);
+
+    // Must use short-form escapes
+    expect(canonical).toContain('\\b');
+    expect(canonical).toContain('\\f');
+    expect(canonical).toContain('\\n');
+    expect(canonical).toContain('\\r');
+    expect(canonical).toContain('\\t');
+
+    // Must NOT use long-form \uXXXX equivalents
+    expect(canonical).not.toContain('\\u0008');
+    expect(canonical).not.toContain('\\u000c');
+    expect(canonical).not.toContain('\\u000C');
+    expect(canonical).not.toContain('\\u000a');
+    expect(canonical).not.toContain('\\u000A');
+    expect(canonical).not.toContain('\\u000d');
+    expect(canonical).not.toContain('\\u000D');
+    expect(canonical).not.toContain('\\u0009');
+
+    // Must match fixture canonical_json byte-for-byte
+    expect(canonical).toBe(expectedCanonical);
+  });
+
+  it('special-chars fixture verifies with deterministic keypair', async () => {
+    const receipt = fixtureToReceipt(specialCharsFixture);
+    const result = await verifyReceipt(receipt, localKeyResolver);
+    expect(result).toBe(true);
   });
 });

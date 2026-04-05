@@ -1,0 +1,22 @@
+{
+  "description": "SAR v0.1 fixture with RFC 8785 §3.2.2.2 special-char escapes in reason_code",
+  "sar_version": "0.1",
+  "input": {
+    "task_id_hash": "sha256:fixture-task-special-chars",
+    "verdict": "FAIL",
+    "confidence": 0.5,
+    "reason_code": "LINE1\bLINE2\fLINE3\nLINE4\rLINE5\tEND",
+    "ts": "2026-02-14T12:00:00Z",
+    "verifier_kid": "xmandate-ed25519-test-01"
+  },
+  "canonical_json": "{\"confidence\":0.5,\"reason_code\":\"LINE1\\bLINE2\\fLINE3\\nLINE4\\rLINE5\\tEND\",\"task_id_hash\":\"sha256:fixture-task-special-chars\",\"ts\":\"2026-02-14T12:00:00Z\",\"verdict\":\"FAIL\",\"verifier_kid\":\"xmandate-ed25519-test-01\"}",
+  "receipt_id": "sha256:32a86a88c09f847248f8694f7507b4732e87441b33c15298fba0d223a2eeb2ba",
+  "public_key_kid": "xmandate-ed25519-test-01",
+  "sig": "base64url:GwsEGJuGzcFWUZBImzBBKGj0qfjwOxCzxgUTSwKqudby0uQMU79DpcwbB-SnlU_pYHKzzNo2hTwt8CxsxS5WAA",
+  "verification_steps": [
+    "1. JCS-canonicalize `input` (RFC 8785).",
+    "2. Confirm it matches `canonical_json` byte-for-byte.",
+    "3. SHA256(canonical_json bytes) => receipt_id hex.",
+    "4. Verify Ed25519 signature over the hash bytes using public key from sar-keys.json."
+  ]
+}

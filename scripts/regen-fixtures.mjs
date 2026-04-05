@@ -125,6 +125,18 @@ const positiveFixtures = [
       verifier_kid: KID,
     },
   },
+  {
+    file: 'sar-v0.1-special-chars.json',
+    description: 'SAR v0.1 fixture with RFC 8785 §3.2.2.2 special-char escapes in reason_code',
+    input: {
+      task_id_hash: 'sha256:fixture-task-special-chars',
+      verdict: 'FAIL',
+      confidence: 0.5,
+      reason_code: 'LINE1\bLINE2\fLINE3\nLINE4\rLINE5\tEND',
+      ts: '2026-02-14T12:00:00Z',
+      verifier_kid: KID,
+    },
+  },
 ];
 
 for (const def of positiveFixtures) {
