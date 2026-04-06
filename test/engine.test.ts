@@ -607,7 +607,7 @@ describe('key rotation', () => {
 
 // ── nutstrut DefaultVerifier vectors (cross-implementation) ──
 
-const dvKeysDoc = loadFixture('defaultverifier-sar-keys.json') as unknown as SarKeysDocument;
+const dvKeysDoc = loadFixture('dv-prod-sar-keys.json') as unknown as SarKeysDocument;
 
 function dvKeyResolver(kid: string): Uint8Array {
   return resolveKidFromDocument(dvKeysDoc, kid);

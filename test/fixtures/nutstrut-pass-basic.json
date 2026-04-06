@@ -16,7 +16,7 @@
   "verification_steps": [
     "1. JCS-canonicalize `input` (RFC 8785).",
     "2. SHA256(canonical_json bytes) => receipt_id hex.",
-    "3. Verify Ed25519 signature over the hash bytes using sar-prod-ed25519-02 from defaultverifier-sar-keys.json.",
+    "3. Verify Ed25519 signature over the hash bytes using sar-prod-ed25519-02 from dv-prod-sar-keys.json.",
     "4. Confirm _ext.operation_binding does not affect receipt_id or signature."
   ],
   "_ext": {
